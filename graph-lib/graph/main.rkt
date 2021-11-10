@@ -12,6 +12,7 @@
          "graph-fns-maxflow.rkt"
          "graph-fns-graphviz.rkt"
          "graph-property.rkt"
+         "graph-fns-clique.rkt"
          "utils.rkt")
 
 (provide (all-from-out "gen-graph.rkt")
@@ -29,7 +30,8 @@
                        "graph-fns-singlesource-shortestpaths.rkt"
                        "graph-fns-coloring.rkt"
                        "graph-fns-maxflow.rkt"
-                       "graph-fns-graphviz.rkt")
+                       "graph-fns-graphviz.rkt"
+                       "graph-fns-clique.rkt")
          floyd-warshall transitive-closure johnson
          (all-from-out "graph-property.rkt")
          $v $from $to $seen? $discovered? $visited? $broke? $acc)
