@@ -75,5 +75,9 @@
                       (set!-values (subg cand ext-u) (apply values (pop! stack)))])
           (loop))))))
 
-(define (in-cliques G) (in-producer (find-cliques G) (void)))
-(define (get-cliques G) (for/list ([clique (in-cliques G)]) clique))
+(define-syntax-rule (in-cliques G)
+  (in-producer (find-cliques G) (void)))
+
+(define (get-cliques G)
+  (for/list ([clique (in-cliques G)])
+    clique))
