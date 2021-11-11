@@ -10,14 +10,21 @@
 (provide find-cliques in-cliques get-cliques)
 
 (define-syntax-rule (push! x ls) (set! ls (cons x ls)))
+
 (define-syntax-rule (pop! ls)
   (let ([head (car ls)])
     (set! ls (cdr ls))
     head))
+
 (define-syntax-rule (set-pop! s)
   (let ([q (set-first s)])
     (set-remove! s q)
     q))
+
+(define-syntax-rule (loop-forever body ...)
+  (let loop ()
+    body ...
+    (loop)))
 
 (define (find-cliques G)
   (define (set-argmax s f)
@@ -44,36 +51,35 @@
       v))
 
   (generator ()
-    (with-handlers ([exn:fail:contract? (λ (exn) (void))])
-      (let* ([Q     '((void))]
-             [V      (get-vertices G)]
-             [subg   (list->set V)]
-             [cand   (list->mutable-set V)]
-             [u      (get-u subg cand)]
-             [ext-u  (get-ext-u u cand)]
-             [stack '()])
+    (let* ([Q     '((void))]
+           [V      (get-vertices G)]
+           [subg   (list->set V)]
+           [cand   (list->mutable-set V)]
+           [u      (get-u subg cand)]
+           [ext-u  (get-ext-u u cand)]
+           [stack '()])
 
-        (let loop ()
-          (cond [(not (set-empty? ext-u))
-                 (let* ([q      (set-pop! ext-u)]
-                        [adj-q  (list->set (get-neighbors G q))]
-                        [subg-q (set-intersect subg adj-q)])
-                   (set-remove! cand q)
-                   (set! Q (cons q (cdr Q)))
-                   (cond [(set-empty? subg-q) (yield (list* Q))]
-                         [(let ([cand-q (set-intersect/mutable cand adj-q)])
-                            (and (not (set-empty? cand-q)) cand-q))
-                          =>
-                          (λ (cand-q)
-                            (push! (list subg cand ext-u) stack)
-                            (push! (void) Q)
-                            (set! subg subg-q)
-                            (set! cand cand-q)
-                            (set! u (get-u subg cand))
-                            (set! ext-u (get-ext-u u cand)))]))]
-                [else (pop! Q)
-                      (set!-values (subg cand ext-u) (apply values (pop! stack)))])
-          (loop))))))
+      (with-handlers ([exn:fail:contract? (λ (_) (void))])
+        (loop-forever
+         (cond [(not (set-empty? ext-u))
+                (let* ([q      (set-pop! ext-u)]
+                       [adj-q  (list->set (get-neighbors G q))]
+                       [subg-q (set-intersect subg adj-q)])
+                  (set-remove! cand q)
+                  (set! Q (cons q (cdr Q)))
+                  (cond [(set-empty? subg-q) (yield (list* Q))]
+                        [(let ([cand-q (set-intersect/mutable cand adj-q)])
+                           (and (not (set-empty? cand-q)) cand-q))
+                         =>
+                         (λ (cand-q)
+                           (push! (list subg cand ext-u) stack)
+                           (push! (void) Q)
+                           (set! subg subg-q)
+                           (set! cand cand-q)
+                           (set! u (get-u subg cand))
+                           (set! ext-u (get-ext-u u cand)))]))]
+               [else (pop! Q)
+                     (set!-values (subg cand ext-u) (apply values (pop! stack)))]))))))
 
 (define-syntax-rule (in-cliques G)
   (in-producer (find-cliques G) (void)))
