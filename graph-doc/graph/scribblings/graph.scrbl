@@ -4,7 +4,8 @@
                      racket/contract/base
                      racket/generic
                      math/matrix
-                     racket))
+                     racket
+                     racket/generator))
 
 @title{Racket Generic Graph Library}
 
@@ -858,6 +859,22 @@ This function should only be used on directed graphs, otherwise things get doubl
   Returns a list of edges representing the maximum matching of the given bipartite graph. An error is raised if the given graph is not bipartite. Uses @racket[maxflow] to compute the maximum matching.
 
 Note: this is not the Hopcroft-Karp (ie fastest) bipartite matching algorithm.}
+
+@; cliques ---------------------------------------------------------------------
+@section{Cliques}
+All clique functions should only be used on undirected graphs, without self-loops or parallel edges.
+
+@defproc[(find-cliques [g graph?]) (generator?)]{
+Returns a generator that yields a different maximal clique in graph @racket[g] on each invocation, until all such cliques are yielded; upon which it terminates with @|void-const|.
+}
+
+@defproc[(in-cliques [g graph?]) (sequence?)]{
+Expands to a sequence of all maximal cliques in graph @racket[g].
+}
+
+@defproc[(get-cliques [g graph?]) (list/c)]{
+Returns a list of all maximal cliques in graph @racket[g].
+}
 
 @; util fns -------------------------------------------------------------------
 @section{Graphviz}
